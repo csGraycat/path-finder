@@ -11,7 +11,7 @@
   + every node of the maze is a separate symbol, enclosed by quotation marks and separated by commas;
   + each row of a maze has to be enclosed by square brackets and separated by commas;
   + the whole maze (all rows together) has to be enclosed by square brackets.
-2. Put the starting and closing points in the desired positions.
+2. Put the starting and ending points in the desired positions.
 3. Launch the script.
 Once the path is found, it will be displayed in console, represented by dots.
 ### Notes:
