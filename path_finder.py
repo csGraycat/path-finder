@@ -1,10 +1,27 @@
+from queue import Queue
+
+
+def draw_path(field_arr, path):
+    for node in path[1:-1]:
+        field_arr[node[0]][node[1]] = "."
+    return field_arr
+
+
 field = [
     ['#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#'],
     ['#', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '#', ' ', ' ', '#'],
     ['#', ' ', '#', '#', '#', '#', ' ', ' ', ' ', '#', ' ', '#', ' ', ' ', '#'],
     ['#', ' ', ' ', ' ', ' ', '#', ' ', '#', ' ', '#', ' ', '#', ' ', '@', '#'],
+    ['#', '#', '#', '#', ' ', '#', '#', ' ', '#', '#', ' ', ' ', ' ', ' ', '#'],
+    ['#', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '#', ' ', ' ', ' ', ' ', ' ', '#'],
+    ['#', '#', '#', '#', '#', '#', '#', ' ', '#', '#', '#', '#', '#', '#', '#'],
+    ['#', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '#', ' ', ' ', '#'],
+    ['#', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '#', ' ', ' ', '#'],
+    ['#', ' ', '#', '#', '#', '#', ' ', ' ', ' ', '#', ' ', '#', ' ', ' ', '#'],
+    ['#', ' ', ' ', ' ', ' ', '#', '#', '#', ' ', '#', ' ', '#', ' ', ' ', '#'],
     ['#', '#', '#', '#', ' ', '#', ' ', ' ', '#', '#', ' ', ' ', ' ', ' ', '#'],
     ['#', 'x', ' ', ' ', ' ', ' ', ' ', ' ', '#', ' ', ' ', ' ', ' ', ' ', '#'],
+    ['#', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '#', ' ', ' ', '#'],
     ['#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#'],
 ]
 
@@ -23,43 +40,35 @@ for row in enumerate(field):
 for row in field:
     print(' '.join(row))
 
-nodes = [player_pos]  # the main queue
-paths = [[player_pos]]  # [[1, 2, 4], [1, 3, 5], ... ]
+nodes = Queue()  # the main queue
+nodes.put((player_pos, [player_pos]))  # the queue stores the node for consideration as well as the path towards it
 visited = set()
 
-while exit_pos not in nodes:
-    nodes_added = []
-    row = nodes[0][0]
-    col = nodes[0][1]
-    if field[row - 1][col] != '#' and (row - 1, col) not in visited:  # up
-        nodes.append((row - 1, col))
-        nodes_added.append((row - 1, col))
-    if field[row + 1][col] != '#' and (row + 1, col) not in visited:  # down
-        nodes.append((row + 1, col))
-        nodes_added.append((row + 1, col))
-    if field[row][col - 1] != '#' and (row, col - 1) not in visited:  # left
-        nodes.append((row, col - 1))
-        nodes_added.append((row, col - 1))
-    if field[row][col + 1] != '#' and (row, col + 1) not in visited:  # right
-        nodes.append((row, col + 1))
-        nodes_added.append((row, col + 1))
+while not nodes.empty():
+    current_node, current_path = nodes.get()
+    if current_node == exit_pos:
+        shortest_path = current_path
+        field = draw_path(field, shortest_path)
+        break
+    row = current_node[0]
+    col = current_node[1]
+    neighbours = []
+    if row - 1 != 0:  # up
+        neighbours.append((row - 1, col))
+    if row + 1 != len(field) - 1:  # down
+        neighbours.append((row + 1, col))
+    if col - 1 != 0:  # left
+        neighbours.append((row, col - 1))
+    if col + 1 != len(field[0]) - 1:  # right
+        neighbours.append((row, col + 1))
 
-    for path in paths:
-        if nodes[0] == path[-1]:
-            if nodes_added:  # extend path only if it's not a dead-end
-                if len(nodes_added) > 1:  # handle forks in the path
-                    paths.append(path[:])
-                path.append(nodes_added.pop(0))
+    for neighbour in neighbours:
+        r = neighbour[0]
+        c = neighbour[1]
+        if field[r][c] != '#' and neighbour not in visited:
+            nodes.put((neighbour, current_path + [neighbour]))
 
-    visited.add(nodes.pop(0))
-
-shortest_path = []
-for path in paths:
-    if path[-1] == exit_pos:
-        shortest_path = path
-
-for node in shortest_path[1:-1]:
-    field[node[0]][node[1]] = "."
+    visited.add(current_node)
 
 print("shortest path: ")
 for row in field:
